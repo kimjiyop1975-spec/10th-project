@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<!-- 문서의 언어를 한국어로 설정 -->
+<html lang="ko">
+<head>
+  <!-- 문자 인코딩을 UTF-8로 설정 -->
+  <meta charset="UTF-8">
+  <!-- 모바일 및 다양한 기기 환경에서 최적 뷰포트 설정 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 웹 페이지 타이틀 -->
+  <title>실시간 공기 신호등</title>
+  <!-- 프리텐다드(Pretendard) 웹 폰트 CDN 연결 -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <!-- 외부 스타일시트(CSS) 파일 연결 -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js CDN 라이브러리 추가 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- 전체 콘텐츠 컨테이너 -->
+  <div class="container">
+    <!-- 상단 헤더 영역 -->
+    <header class="header">
+      <!-- 서비스 메인 타이틀 -->
+      <h1>실시간 공기 신호등</h1>
+      <!-- 서브 안내 문구 -->
+      <p class="subtitle">한눈에 확인하는 우리 지역 대기오염 상태</p>
+    </header>
+
+    <!-- 시도 선택 컨트롤 바 영역 -->
+    <section class="control-panel">
+      <!-- 드롭다운 안내 라벨 -->
+      <label for="sidoSelect" class="select-label">지역 선택</label>
+      <!-- 시도 선택 드롭다운 메뉴 -->
+      <select id="sidoSelect" class="sido-dropdown">
+        <option value="서울" selected>서울</option>
+        <option value="전국">전국</option>
+        <option value="부산">부산</option>
+        <option value="대구">대구</option>
+        <option value="인천">인천</option>
+        <option value="광주">광주</option>
+        <option value="대전">대전</option>
+        <option value="울산">울산</option>
+        <option value="세종">세종</option>
+        <option value="경기">경기</option>
+        <option value="강원">강원</option>
+        <option value="충북">충북</option>
+        <option value="충남">충남</option>
+        <option value="전북">전북</option>
+        <option value="전남">전남</option>
+        <option value="경북">경북</option>
+        <option value="경남">경남</option>
+        <option value="제주">제주</option>
+      </select>
+    </section>
+
+    <!-- 공기 신호등 메인 대시보드 카드 영역 -->
+    <section class="traffic-light-section">
+      <!-- 상태에 따라 색상과 배경이 변경되는 신호등 메인 카드 -->
+      <div class="traffic-card grade-none" id="trafficCard">
+        <!-- 선택된 지역 이름 표시 -->
+        <div class="traffic-region" id="trafficRegion">서울</div>
+        <!-- 대형 신호등 이모지와 상태 등급 텍스트 묶음 -->
+        <div class="traffic-main">
+          <!-- 신호등 이모지 (🔵🟢🟠🔴⚪) -->
+          <span class="traffic-emoji" id="trafficEmoji">⚪</span>
+          <!-- 등급 텍스트 (좋음 / 보통 / 나쁨 / 매우나쁨) -->
+          <span class="traffic-status" id="trafficStatus">불러오는 중...</span>
+        </div>
+        <!-- 평균 미세먼지 수치 표시 영역 -->
+        <div class="traffic-value-wrap">
+          <span class="traffic-value" id="trafficValue">-</span>
+        </div>
+        <!-- 행동 요령 한 줄 안내 문구 (나쁨 이상 시 마스크 권고 등) -->
+        <p class="traffic-advice" id="trafficAdvice">대기 정보를 확인하고 있습니다.</p>
+        <!-- 기준 측정 시각 한국어 표시 영역 -->
+        <div class="traffic-time" id="trafficTime">-</div>
+      </div>
+    </section>
+
+    <!-- 측정소별 미세먼지 수치 가로 막대그래프 섹션 -->
+    <section class="chart-section" id="chartSection">
+      <!-- 차트 섹션 제목 -->
+      <div class="chart-header">
+        <h2 class="chart-title">미세먼지 수치 높은 측정소 TOP 10</h2>
+        <span class="chart-unit">(단위: ㎍/㎥)</span>
+      </div>
+      <!-- 캔버스를 감싸는 반응형 컨테이너 -->
+      <div class="chart-container">
+        <canvas id="pm10BarChart"></canvas>
+      </div>
+    </section>
+
+    <!-- 데이터를 불러오는 동안 표시되는 인디케이터 -->
+    <div id="loadingIndicator" class="loading-indicator">
+      <div class="spinner"></div>
+      <span>불러오는 중...</span>
+    </div>
+
+    <!-- 에러 발생 시 사용자 안내 메시지 영역 -->
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+    <!-- 각 측정소 카드 그리드 컨테이너 -->
+    <main class="station-grid" id="stationGrid">
+      <!-- 자바스크립트로 측정소별 신호등 카드가 동적으로 추가됩니다 -->
+    </main>
+
+    <!-- 데이터 출처 및 저작권 안내 푸터 영역 -->
+    <footer class="app-footer">
+      <p class="source-info">
+        데이터 제공: 
+        <a href="https://www.airkorea.or.kr" target="_blank" rel="noopener noreferrer">한국환경공단 에어코리아</a>
+        ·
+        <a href="https://www.data.go.kr" target="_blank" rel="noopener noreferrer">공공데이터포털</a>
+      </p>
+      <p class="disclaimer">
+        본 서비스에서 제공하는 대기질 측정값은 실시간 관측치이며 현지 사정이나 수신 상태에 따라 변동될 수 있습니다.
+      </p>
+    </footer>
+  </div>
+
+  <!-- 자바스크립트 파일 연결 -->
+  <script src="script.js"></script>
+</body>
+</html>
